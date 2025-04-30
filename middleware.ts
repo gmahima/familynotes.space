@@ -28,6 +28,6 @@ export const config = {
     "/folders/:path*",
     "/billing/:path*",
     "/memes/:path*",
-    "/api/(?!auth).*",
+    "/api/:path*",
   ],
 }

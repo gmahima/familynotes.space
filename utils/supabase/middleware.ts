@@ -37,7 +37,8 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.pathname.startsWith("/signup") ||
     request.nextUrl.pathname.startsWith("/auth") ||
     request.nextUrl.pathname.startsWith("/_next") ||
-    request.nextUrl.pathname.includes("favicon.ico")
+    request.nextUrl.pathname.includes("favicon.ico") ||
+    request.nextUrl.pathname.startsWith("/api/auth")
 
   // Define authenticated routes that require a user session
   const isAuthenticatedRoute =
@@ -50,6 +51,15 @@ export async function updateSession(request: NextRequest) {
 
   // Redirect to login if trying to access authenticated route without a session
   if (!user && isAuthenticatedRoute) {
+    // For API routes, return a 401 Unauthorized response instead of redirecting
+    if (request.nextUrl.pathname.startsWith("/api")) {
+      return new NextResponse(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      })
+    }
+
+    // For non-API routes, redirect to login
     const url = request.nextUrl.clone()
     url.pathname = "/login"
     url.searchParams.set("redirectedFrom", request.nextUrl.pathname)
