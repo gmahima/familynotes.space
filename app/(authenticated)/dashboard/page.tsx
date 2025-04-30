@@ -1,19 +1,6 @@
-import { redirect } from "next/navigation"
-import { createServerClient } from "@/lib/supabase-server"
 import { NoteEditor } from "@/components/notes/note-editor"
 
-export default async function DashboardPage() {
-  const supabase = createServerClient()
-
-  // Check if user is authenticated
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user) {
-    redirect("/login")
-  }
-
+export default function DashboardPage() {
   return (
     <div className="space-y-6">
       <div>
@@ -21,6 +8,7 @@ export default async function DashboardPage() {
         <p className="text-muted-foreground">Create a new note or select an existing note from the sidebar.</p>
       </div>
       <div className="border rounded-lg p-6">
+        <h3 className="text-lg font-medium mb-4">Create a New Note</h3>
         <NoteEditor />
       </div>
     </div>

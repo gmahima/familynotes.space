@@ -1,9 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
 import { LogOut, User } from "lucide-react"
-import { supabase } from "@/lib/supabase"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -14,34 +11,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { useAuth } from "@/components/providers/auth-provider"
 
 export function UserProfile() {
-  const router = useRouter()
-  const [email, setEmail] = useState<string | null>(null)
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    async function getUserProfile() {
-      try {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser()
-        setEmail(user?.email || null)
-      } catch (error) {
-        console.error("Error fetching user:", error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    getUserProfile()
-  }, [])
-
-  const handleSignOut = async () => {
-    await supabase.auth.signOut()
-    router.push("/login")
-    router.refresh()
-  }
+  const { user, signOut, loading } = useAuth()
 
   if (loading) {
     return (
@@ -53,12 +26,16 @@ export function UserProfile() {
     )
   }
 
+  if (!user) {
+    return null
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="sm" className="relative h-8 rounded-full">
           <Avatar className="h-8 w-8">
-            <AvatarFallback>{email ? email.charAt(0).toUpperCase() : "U"}</AvatarFallback>
+            <AvatarFallback>{user.email ? user.email.charAt(0).toUpperCase() : "U"}</AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
@@ -66,10 +43,10 @@ export function UserProfile() {
         <DropdownMenuLabel>My Account</DropdownMenuLabel>
         <DropdownMenuItem disabled className="flex items-center gap-2">
           <User className="h-4 w-4" />
-          <span>{email}</span>
+          <span>{user.email}</span>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleSignOut} className="text-red-600 cursor-pointer">
+        <DropdownMenuItem onClick={signOut} className="text-red-600 cursor-pointer">
           <LogOut className="mr-2 h-4 w-4" />
           <span>Log out</span>
         </DropdownMenuItem>

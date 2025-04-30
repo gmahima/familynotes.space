@@ -3,6 +3,9 @@ import type { NextRequest } from "next/server"
 import { createClient } from "@supabase/supabase-js"
 
 export async function middleware(request: NextRequest) {
+  // Create a response object
+  const res = NextResponse.next()
+
   // Create a Supabase client configured to use cookies
   const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
     cookies: {
@@ -14,36 +17,43 @@ export async function middleware(request: NextRequest) {
     },
   })
 
-  // Refresh session if expired
-  await supabase.auth.getSession()
+  try {
+    // Get the session - this will refresh the session if needed
+    const {
+      data: { session },
+    } = await supabase.auth.getSession()
 
-  // Check if user is authenticated
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+    // Check if we have a session
+    const isAuthenticated = !!session
 
-  // Auth routes - redirect to dashboard if authenticated
-  if (request.nextUrl.pathname.startsWith("/login") || request.nextUrl.pathname.startsWith("/signup")) {
-    if (user) {
-      return NextResponse.redirect(new URL("/dashboard", request.url))
+    // Auth routes - redirect to dashboard if authenticated
+    if (request.nextUrl.pathname.startsWith("/login") || request.nextUrl.pathname.startsWith("/signup")) {
+      if (isAuthenticated) {
+        return NextResponse.redirect(new URL("/dashboard", request.url))
+      }
+      return res
     }
-    return NextResponse.next()
-  }
 
-  // Protected routes - redirect to login if not authenticated
-  if (
-    request.nextUrl.pathname.startsWith("/dashboard") ||
-    request.nextUrl.pathname.startsWith("/notes") ||
-    request.nextUrl.pathname.startsWith("/folders") ||
-    request.nextUrl.pathname.startsWith("/billing")
-  ) {
-    if (!user) {
-      return NextResponse.redirect(new URL("/login", request.url))
+    // Protected routes - redirect to login if not authenticated
+    if (
+      request.nextUrl.pathname.startsWith("/dashboard") ||
+      request.nextUrl.pathname.startsWith("/notes") ||
+      request.nextUrl.pathname.startsWith("/folders") ||
+      request.nextUrl.pathname.startsWith("/billing")
+    ) {
+      if (!isAuthenticated) {
+        return NextResponse.redirect(new URL("/login", request.url))
+      }
+      return res
     }
-    return NextResponse.next()
-  }
 
-  return NextResponse.next()
+    return res
+  } catch (error) {
+    console.error("Middleware error:", error)
+    // If there's an error, we'll just continue to the page
+    // This prevents authentication issues from blocking access completely
+    return res
+  }
 }
 
 export const config = {
