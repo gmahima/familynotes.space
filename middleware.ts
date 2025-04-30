@@ -23,11 +23,5 @@ export const config = {
      * - /api routes that require authentication
      */
     "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
-    "/dashboard/:path*",
-    "/notes/:path*",
-    "/folders/:path*",
-    "/billing/:path*",
-    "/memes/:path*",
-    "/api/:path*",
   ],
 }
