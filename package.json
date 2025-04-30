@@ -67,7 +67,8 @@
     "@tiptap/starter-kit": "latest",
     "@tiptap/extension-placeholder": "latest",
     "uuid": "latest",
-    "sharp": "latest"
+    "sharp": "latest",
+    "@supabase/ssr": "latest"
   },
   "devDependencies": {
     "@types/node": "^22",
