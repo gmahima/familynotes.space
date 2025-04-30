@@ -28,6 +28,7 @@ export async function updateSession(request: NextRequest) {
   // IMPORTANT: DO NOT REMOVE auth.getUser()
   const {
     data: { user },
+    error
   } = await supabase.auth.getUser()
 
   // Define public routes that don't require authentication
@@ -50,14 +51,9 @@ export async function updateSession(request: NextRequest) {
 
   // Redirect to login if trying to access authenticated route without a session
   if (!user && isAuthenticatedRoute) {
-    // For API routes, return a 401 Unauthorized response instead of redirecting
-    if (request.nextUrl.pathname.startsWith("/api")) {
-      return new NextResponse(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { "Content-Type": "application/json" },
-      })
-    }
-
+  console.log(user);
+  console.log(error);
+  console.log(request.nextUrl.pathname);
     // For non-API routes, redirect to login
     const url = request.nextUrl.clone()
     url.pathname = "/login"
