@@ -1,9 +1,13 @@
-import { createServerClient } from "@supabase/ssr"
+import { createServerClient, type CookieOptions } from "@supabase/ssr"
 import { NextResponse, type NextRequest } from "next/server"
 
 export async function updateSession(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({
-    request,
+  // Clone the request headers
+  const requestHeaders = new Headers(request.headers)
+  const response = NextResponse.next({
+    request: {
+      headers: requestHeaders,
+    },
   })
 
   const supabase = createServerClient(
@@ -11,62 +15,56 @@ export async function updateSession(request: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        getAll() {
-          return request.cookies.getAll()
+        get(name) {
+          return request.cookies.get(name)?.value
         },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value))
-          supabaseResponse = NextResponse.next({
-            request,
+        set(name, value, options) {
+          response.cookies.set({
+            name,
+            value,
+            ...options,
           })
-          cookiesToSet.forEach(({ name, value, options }) => supabaseResponse.cookies.set(name, value, options))
+        },
+        remove(name, options) {
+          response.cookies.set({
+            name,
+            value: "",
+            ...options,
+            maxAge: 0,
+          })
         },
       },
-    },
+    }
   )
 
-  // IMPORTANT: DO NOT REMOVE auth.getUser()
-  const {
-    data: { user },
-    error
-  } = await supabase.auth.getUser()
-
-  // Define public routes that don't require authentication
-  const isPublicRoute =
+  // Skip auth check for special routes (auth, api, etc.)
+  if (
+    request.nextUrl.pathname.startsWith("/auth") ||
+    request.nextUrl.pathname.startsWith("/api") ||
     request.nextUrl.pathname === "/" ||
     request.nextUrl.pathname.startsWith("/login") ||
     request.nextUrl.pathname.startsWith("/signup") ||
-    request.nextUrl.pathname.startsWith("/auth") ||
-    request.nextUrl.pathname.startsWith("/_next") ||
-    request.nextUrl.pathname.includes("favicon.ico") ||
-    request.nextUrl.pathname.startsWith("/api/auth")
-
-  // Define authenticated routes that require a user session
-  const isAuthenticatedRoute =
-    request.nextUrl.pathname.startsWith("/dashboard") ||
-    request.nextUrl.pathname.startsWith("/notes") ||
-    request.nextUrl.pathname.startsWith("/folders") ||
-    request.nextUrl.pathname.startsWith("/billing") ||
-    request.nextUrl.pathname.startsWith("/memes")
-  console.log(user);
-  console.log(error);
-  console.log(request.nextUrl.pathname);
-  // Redirect to login if trying to access authenticated route without a session
-  if (!user && isAuthenticatedRoute) {
-
-    // For non-API routes, redirect to login
-    const url = request.nextUrl.clone()
-    url.pathname = "/login"
-    url.searchParams.set("redirectedFrom", request.nextUrl.pathname)
-    return NextResponse.redirect(url)
+    request.nextUrl.pathname.startsWith("/_next")
+  ) {
+    return response
   }
 
-  // Redirect to dashboard if accessing auth pages while logged in
-  if (user && (request.nextUrl.pathname.startsWith("/login") || request.nextUrl.pathname.startsWith("/signup"))) {
-    const url = request.nextUrl.clone()
-    url.pathname = "/dashboard"
-    return NextResponse.redirect(url)
+  // Check if we have a session
+  const { data } = await supabase.auth.getSession()
+  
+  // If not and trying to access protected route, redirect to login
+  if (
+    !data.session &&
+    (request.nextUrl.pathname.startsWith("/dashboard") ||
+      request.nextUrl.pathname.startsWith("/notes") ||
+      request.nextUrl.pathname.startsWith("/folders") ||
+      request.nextUrl.pathname.startsWith("/billing") ||
+      request.nextUrl.pathname.startsWith("/memes"))
+  ) {
+    const redirectUrl = new URL("/login", request.url)
+    redirectUrl.searchParams.set("redirectedFrom", request.nextUrl.pathname)
+    return NextResponse.redirect(redirectUrl)
   }
 
-  return supabaseResponse
+  return response
 }
