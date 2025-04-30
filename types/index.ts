@@ -62,3 +62,35 @@ export type Product = {
   image: string | null
   metadata: Record<string, string>
 }
+
+export type TextPosition = {
+  id: string
+  x: number
+  y: number
+  width: number
+  height: number
+  fontSize: number
+  color: string
+  alignment: "left" | "center" | "right"
+  maxLength?: number
+}
+
+export type MemeTemplate = {
+  id: string
+  name: string
+  image_url: string
+  user_id: string
+  is_public: boolean
+  text_positions: TextPosition[]
+  created_at: string
+  updated_at: string
+}
+
+export type MemeGeneration = {
+  id: string
+  template_id: string
+  user_id: string
+  text_inputs: Record<string, string>
+  output_url: string | null
+  created_at: string
+}

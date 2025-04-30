@@ -3,7 +3,16 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { BookOpen, ChevronDown, ChevronRight, FolderIcon, FolderPlus, PlusCircle, CreditCard } from "lucide-react"
+import {
+  BookOpen,
+  ChevronDown,
+  ChevronRight,
+  FolderIcon,
+  FolderPlus,
+  PlusCircle,
+  CreditCard,
+  ImageIcon,
+} from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -121,17 +130,6 @@ export function Sidebar() {
                     </Link>
                   ))
                 )}
-                <Link href="/billing">
-                  <div
-                    className={cn(
-                      "flex items-center rounded-md px-4 py-2 text-sm",
-                      pathname === "/billing" ? "bg-accent text-accent-foreground" : "hover:bg-accent/50",
-                    )}
-                  >
-                    <CreditCard className="mr-2 h-4 w-4" />
-                    <span>Billing</span>
-                  </div>
-                </Link>
               </div>
             )}
           </div>
@@ -212,6 +210,34 @@ export function Sidebar() {
                 )}
               </div>
             )}
+          </div>
+          <Separator />
+          <div>
+            <h3 className="mb-2 px-4 text-sm font-medium">Features</h3>
+            <div className="space-y-1">
+              <Link href="/memes">
+                <div
+                  className={cn(
+                    "flex items-center rounded-md px-4 py-2 text-sm",
+                    pathname.startsWith("/memes") ? "bg-accent text-accent-foreground" : "hover:bg-accent/50",
+                  )}
+                >
+                  <ImageIcon className="mr-2 h-4 w-4" />
+                  <span>Meme Generator</span>
+                </div>
+              </Link>
+              <Link href="/billing">
+                <div
+                  className={cn(
+                    "flex items-center rounded-md px-4 py-2 text-sm",
+                    pathname === "/billing" ? "bg-accent text-accent-foreground" : "hover:bg-accent/50",
+                  )}
+                >
+                  <CreditCard className="mr-2 h-4 w-4" />
+                  <span>Billing</span>
+                </div>
+              </Link>
+            </div>
           </div>
         </div>
       </ScrollArea>

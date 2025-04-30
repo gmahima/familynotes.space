@@ -65,7 +65,9 @@
     "prosemirror-state": "latest",
     "@tiptap/react": "latest",
     "@tiptap/starter-kit": "latest",
-    "@tiptap/extension-placeholder": "latest"
+    "@tiptap/extension-placeholder": "latest",
+    "uuid": "latest",
+    "sharp": "latest"
   },
   "devDependencies": {
     "@types/node": "^22",
