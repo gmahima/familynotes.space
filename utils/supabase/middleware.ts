@@ -51,9 +51,7 @@ export async function updateSession(request: NextRequest) {
 
   // Redirect to login if trying to access authenticated route without a session
   if (!user && isAuthenticatedRoute) {
-  console.log(user);
-  console.log(error);
-  console.log(request.nextUrl.pathname);
+
     // For non-API routes, redirect to login
     const url = request.nextUrl.clone()
     url.pathname = "/login"
