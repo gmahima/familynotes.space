@@ -12,8 +12,22 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
-     * Feel free to modify this pattern to include more paths.
+     * - public files (images, assets, etc.)
+     *
+     * Also specifically match authenticated routes:
+     * - /dashboard and all its subpaths
+     * - /notes and all its subpaths
+     * - /folders and all its subpaths
+     * - /billing and all its subpaths
+     * - /memes and all its subpaths
+     * - /api routes that require authentication
      */
     "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/dashboard/:path*",
+    "/notes/:path*",
+    "/folders/:path*",
+    "/billing/:path*",
+    "/memes/:path*",
+    "/api/(?!auth).*",
   ],
 }
