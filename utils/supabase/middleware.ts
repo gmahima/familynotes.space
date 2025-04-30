@@ -46,8 +46,7 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.pathname.startsWith("/notes") ||
     request.nextUrl.pathname.startsWith("/folders") ||
     request.nextUrl.pathname.startsWith("/billing") ||
-    request.nextUrl.pathname.startsWith("/memes") ||
-    (request.nextUrl.pathname.startsWith("/api") && !request.nextUrl.pathname.startsWith("/api/auth"))
+    request.nextUrl.pathname.startsWith("/memes")
 
   // Redirect to login if trying to access authenticated route without a session
   if (!user && isAuthenticatedRoute) {
