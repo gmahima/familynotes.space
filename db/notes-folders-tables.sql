@@ -1,3 +1,18 @@
+-- ======================================================================
+-- This SQL script creates and configures tables for notes and folders
+-- with appropriate security policies and default folder creation
+-- ======================================================================
+
+-- ======================================================================
+-- Folders Table Creation
+-- This section creates the folders table if it doesn't exist yet
+-- Each folder has:
+--   - UUID identifier
+--   - Name
+--   - User ownership (linked to auth.users)
+--   - Archive status
+--   - Timestamps for record management
+-- ======================================================================
 -- Create the folders table if it doesn't exist
 CREATE TABLE IF NOT EXISTS folders (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -8,6 +23,17 @@ CREATE TABLE IF NOT EXISTS folders (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- ======================================================================
+-- Notes Table Creation
+-- This section creates the notes table if it doesn't exist yet
+-- Each note has:
+--   - UUID identifier
+--   - Title and content
+--   - Folder relationship (optional, with safe deletion handling)
+--   - User ownership (linked to auth.users)
+--   - Archive status
+--   - Timestamps for record management
+-- ======================================================================
 -- Create the notes table if it doesn't exist
 CREATE TABLE IF NOT EXISTS notes (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -20,9 +46,24 @@ CREATE TABLE IF NOT EXISTS notes (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- ======================================================================
+-- Folders Security Setup
+-- This enables Row Level Security (RLS) on the folders table
+-- RLS ensures users can only access their own folders
+-- ======================================================================
 -- Enable RLS on folders table
 ALTER TABLE folders ENABLE ROW LEVEL SECURITY;
 
+-- ======================================================================
+-- Folders RLS Policies Creation
+-- This block creates four policies that control access to folders:
+-- 1. SELECT policy: Users can only view their own folders
+-- 2. INSERT policy: Users can only create folders they own
+-- 3. UPDATE policy: Users can only update their own folders
+-- 4. DELETE policy: Users can only delete their own folders
+-- 
+-- Each policy is only created if it doesn't already exist
+-- ======================================================================
 -- Create RLS policies for folders if they don't already exist
 DO $$
 BEGIN
@@ -68,9 +109,24 @@ BEGIN
 END
 $$;
 
+-- ======================================================================
+-- Notes Security Setup
+-- This enables Row Level Security (RLS) on the notes table
+-- RLS ensures users can only access their own notes
+-- ======================================================================
 -- Enable RLS on notes table
 ALTER TABLE notes ENABLE ROW LEVEL SECURITY;
 
+-- ======================================================================
+-- Notes RLS Policies Creation
+-- This block creates four policies that control access to notes:
+-- 1. SELECT policy: Users can only view their own notes
+-- 2. INSERT policy: Users can only create notes they own
+-- 3. UPDATE policy: Users can only update their own notes
+-- 4. DELETE policy: Users can only delete their own notes
+-- 
+-- Each policy is only created if it doesn't already exist
+-- ======================================================================
 -- Create RLS policies for notes if they don't already exist
 DO $$
 BEGIN
@@ -116,6 +172,11 @@ BEGIN
 END
 $$;
 
+-- ======================================================================
+-- Timestamp Automation
+-- This section creates a function and triggers to automatically
+-- update the 'updated_at' timestamp whenever a record is modified
+-- ======================================================================
 -- Create function for updated_at timestamps
 CREATE OR REPLACE FUNCTION update_modified_column()
 RETURNS TRIGGER AS $$
@@ -138,6 +199,11 @@ BEFORE UPDATE ON notes
 FOR EACH ROW
 EXECUTE FUNCTION update_modified_column();
 
+-- ======================================================================
+-- Default Folder Creation
+-- This section sets up automatic creation of a default "My Notes" folder
+-- for each new user when their profile is created
+-- ======================================================================
 -- Create a default folder for new users
 CREATE OR REPLACE FUNCTION create_default_folder() 
 RETURNS TRIGGER AS $$
